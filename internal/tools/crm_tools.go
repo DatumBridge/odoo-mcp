@@ -13,7 +13,6 @@ var defaultPartnerFields = []string{
 	"display_name",
 	"email",
 	"phone",
-	"mobile",
 	"street",
 	"city",
 	"zip",
@@ -21,8 +20,6 @@ var defaultPartnerFields = []string{
 	"is_company",
 	"parent_id",
 	"vat",
-	"customer_rank",
-	"supplier_rank",
 }
 
 var defaultLeadFields = []string{
@@ -382,16 +379,10 @@ func handleSearchPartners(args json.RawMessage) map[string]interface{} {
 		domain = append(domain, []interface{}{"email", "ilike", email})
 	}
 	if phone := strArg(m, "phone"); phone != "" {
-		domain = append(domain, "|",
-			[]interface{}{"phone", "ilike", phone},
-			[]interface{}{"mobile", "ilike", phone},
-		)
+		domain = append(domain, []interface{}{"phone", "ilike", phone})
 	}
 	if isCompany, ok := m["is_company"].(bool); ok {
 		domain = append(domain, []interface{}{"is_company", "=", isCompany})
-	}
-	if boolArg(m, "customer_only", false) {
-		domain = append(domain, []interface{}{"customer_rank", ">", 0})
 	}
 
 	fields := sliceStrArg(m, "fields")
@@ -432,7 +423,6 @@ func handleGetPartner(args json.RawMessage) map[string]interface{} {
 	if len(fields) == 0 {
 		fields = append(defaultPartnerFields,
 			"website", "comment", "child_ids", "category_id",
-			"total_invoiced", "credit", "debit",
 		)
 	}
 
