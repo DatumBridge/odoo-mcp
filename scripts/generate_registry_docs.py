@@ -793,6 +793,126 @@ TOOLS = {
             "model": "res.partner"
         }
     },
+
+    # ==================== PROJECT & TASK TOOLS ====================
+    "odoo_list_projects": {
+        "summary": "List and search Odoo projects (project.project) with manager, customer, and name filters.",
+        "next_tool": "Call `odoo_get_project` with `projects[].id` to inspect project details, or `odoo_list_tasks` to view tasks.",
+        "when": "The user asks to view projects, check project status, or list projects managed by a user or client.",
+        "params": [
+            ("name", "no", "string", '"Website Redesign"', "—", "Partial search by project name."),
+            ("partner_id", "no", "integer", "10", "odoo_search_partners → partners[0].id", "Filter by customer/client partner ID."),
+            ("user_id", "no", "integer", "2", "—", "Filter by project manager user ID."),
+            ("active", "no", "boolean", "true", "—", "Filter active projects (default true)."),
+            ("fields", "no", "array", '["id", "name", "user_id", "task_count"]', "—", "Fields to return."),
+            ("page", "no", "integer", "1", "—", "Page number (1-based, default 1)."),
+            ("limit", "no", "integer", "20", "—", "Results per page (default 20, max 100)."),
+        ],
+        "success": [
+            ("projects", '[{"id": 1, "name": "Internal Development", "user_id": [2, "Marc Demo"], "task_count": 8}]', "Array of matching project records."),
+            ("paging.page", "1", "Current page number."),
+            ("paging.limit", "20", "Results per page limit."),
+            ("paging.total_count", "1", "Total matching records."),
+            ("paging.total_page", "1", "Total available pages."),
+        ],
+        "typical_in": {"name": "Development", "limit": 20},
+        "typical_out": {
+            "projects": [{"id": 1, "name": "Internal Development", "user_id": [2, "Marc Demo"], "task_count": 8, "active": True}],
+            "paging": {"limit": 20, "page": 1, "total_count": 1, "total_page": 1}
+        }
+    },
+    "odoo_get_project": {
+        "summary": "Get comprehensive details of a single Odoo project by ID (project.project) including manager, customer, and task count.",
+        "next_tool": "Call `odoo_list_tasks` with `project_id` to view tasks under this project.",
+        "when": "The user asks for details, progress, or manager information of a specific project ID.",
+        "params": [
+            ("project_id", "yes", "integer", "1", "odoo_list_projects → projects[0].id", "Odoo project ID (project.project)."),
+            ("fields", "no", "array", '["id", "name", "user_id", "partner_id", "task_count"]', "—", "Fields to return."),
+        ],
+        "success": [
+            ("project.id", "1", "Project ID."),
+            ("project.name", '"Internal Development"', "Project title."),
+            ("project.user_id", '[2, "Marc Demo"]', "Project manager many2one tuple."),
+            ("project.task_count", "8", "Total number of tasks."),
+        ],
+        "typical_in": {"project_id": 1},
+        "typical_out": {
+            "project": {"id": 1, "name": "Internal Development", "user_id": [2, "Marc Demo"], "task_count": 8, "active": True}
+        }
+    },
+    "odoo_list_tasks": {
+        "summary": "List and filter project tasks (project.task) by project, assigned user, stage, deadline range, or priority.",
+        "next_tool": "Call `odoo_update_task` to modify stage, deadline, or assignees of a task.",
+        "when": "The user asks what tasks are assigned to them, lists tasks for a project, checks overdue tasks, or asks for task status.",
+        "params": [
+            ("project_id", "no", "integer", "1", "odoo_list_projects → projects[0].id", "Filter by project ID."),
+            ("user_id", "no", "integer", "2", "—", "Filter tasks assigned to this user ID."),
+            ("stage_id", "no", "integer", "3", "—", "Filter by kanban stage ID."),
+            ("priority", "no", "string", '"1"', "—", "Filter priority: '0' normal, '1' urgent/starred."),
+            ("name", "no", "string", '"Fix bug"', "—", "Partial search in task name/title."),
+            ("date_deadline_before", "no", "string", '"2026-11-30"', "—", "Filter tasks with deadline on or before (YYYY-MM-DD)."),
+            ("date_deadline_after", "no", "string", '"2026-11-01"', "—", "Filter tasks with deadline on or after (YYYY-MM-DD)."),
+            ("page", "no", "integer", "1", "—", "Page number (1-based, default 1)."),
+            ("limit", "no", "integer", "20", "—", "Results per page (default 20, max 100)."),
+        ],
+        "success": [
+            ("tasks", '[{"id": 10, "name": "Review DatumBridge contract", "project_id": [1, "Internal Development"], "date_deadline": "2026-11-28", "priority": "1"}]', "Array of task records."),
+            ("paging.page", "1", "Current page number."),
+            ("paging.limit", "20", "Results per page limit."),
+            ("paging.total_count", "1", "Total matching records."),
+            ("paging.total_page", "1", "Total available pages."),
+        ],
+        "typical_in": {"project_id": 1, "limit": 20},
+        "typical_out": {
+            "tasks": [{"id": 10, "name": "Review DatumBridge contract", "project_id": [1, "Internal Development"], "date_deadline": "2026-11-28", "priority": "1"}],
+            "paging": {"limit": 20, "page": 1, "total_count": 1, "total_page": 1}
+        }
+    },
+    "odoo_create_task": {
+        "summary": "Create a new task in Odoo (project.task) assigned to users, linked to project, with deadline and priority.",
+        "next_tool": "Call `odoo_update_task` to update progress or kanban stage.",
+        "when": "The user asks to create a task, assign a new todo/action item, or schedule a task with a deadline.",
+        "params": [
+            ("name", "yes", "string", '"Prepare Q4 financial report"', "—", "Task title or description summary."),
+            ("project_id", "no", "integer", "1", "odoo_list_projects → projects[0].id", "Target project ID (project.project)."),
+            ("user_ids", "no", "array", '[2]', "—", "Array of user IDs (res.users) assigned to task."),
+            ("description", "no", "string", '"Review balance sheets and compile profit & loss statement."', "—", "Detailed instructions or checklist."),
+            ("date_deadline", "no", "string", '"2026-12-15"', "—", "Deadline date (YYYY-MM-DD)."),
+            ("priority", "no", "string", '"1"', "—", "Priority: '0' normal, '1' urgent/important."),
+            ("partner_id", "no", "integer", "10", "odoo_search_partners → partners[0].id", "Customer contact partner ID."),
+            ("extra_fields", "no", "object", '{"tag_ids": [1]}', "—", "Additional arbitrary fields for project.task."),
+        ],
+        "success": [
+            ("task_id", "15", "Newly created task ID."),
+            ("name", '"Prepare Q4 financial report"', "Task title."),
+            ("success", "true", "Always true on successful creation."),
+        ],
+        "typical_in": {"name": "Prepare Q4 financial report", "project_id": 1, "date_deadline": "2026-12-15", "priority": "1"},
+        "typical_out": {"task_id": 15, "name": "Prepare Q4 financial report", "success": True}
+    },
+    "odoo_update_task": {
+        "summary": "Update an existing task (project.task) stage, assignees, deadline, priority, or description.",
+        "next_tool": "Call `odoo_list_tasks` to view updated task state.",
+        "when": "The user asks to mark a task as completed, change task deadline, assign a task to someone, or update its priority.",
+        "params": [
+            ("task_id", "yes", "integer", "15", "odoo_list_tasks → tasks[0].id", "Odoo task ID (project.task)."),
+            ("name", "no", "string", '"Prepare Q4 financial report (Final Revision)"', "—", "Updated task title."),
+            ("project_id", "no", "integer", "1", "odoo_list_projects → projects[0].id", "Move task to another project ID."),
+            ("stage_id", "no", "integer", "4", "—", "Change stage ID (e.g. Done, In Progress)."),
+            ("user_ids", "no", "array", '[2, 3]', "—", "Updated assigned user IDs."),
+            ("description", "no", "string", '"Completed initial draft, waiting for CFO signoff."', "—", "Updated description."),
+            ("date_deadline", "no", "string", '"2026-12-20"', "—", "Updated deadline date (YYYY-MM-DD)."),
+            ("priority", "no", "string", '"1"', "—", "Updated priority: '0' or '1'."),
+            ("kanban_state", "no", "string", '"done"', "—", "Kanban status: 'normal', 'done', 'blocked'."),
+            ("extra_fields", "no", "object", '{"color": 2}', "—", "Additional arbitrary fields for project.task."),
+        ],
+        "success": [
+            ("task_id", "15", "Updated task ID."),
+            ("success", "true", "Always true on successful update."),
+        ],
+        "typical_in": {"task_id": 15, "kanban_state": "done", "stage_id": 4},
+        "typical_out": {"task_id": 15, "success": True}
+    },
 }
 
 def generate_doc(name, meta):

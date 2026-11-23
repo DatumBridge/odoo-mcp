@@ -51,6 +51,11 @@ func TestRegister(t *testing.T) {
 		"odoo_create_quotation",
 		"odoo_update_quotation",
 		"odoo_action_quotation",
+		"odoo_list_projects",
+		"odoo_get_project",
+		"odoo_list_tasks",
+		"odoo_create_task",
+		"odoo_update_task",
 		"odoo_execute_kw",
 		"odoo_describe_model",
 	}

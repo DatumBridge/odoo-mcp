@@ -29,13 +29,17 @@ var allOdooTools = []string{
 	"odoo_get_quotation", "odoo_create_quotation", "odoo_update_quotation",
 	"odoo_action_quotation",
 
+	// Projects & Tasks (5)
+	"odoo_list_projects", "odoo_get_project", "odoo_list_tasks",
+	"odoo_create_task", "odoo_update_task",
+
 	// Generic & Discovery (2)
 	"odoo_execute_kw", "odoo_describe_model",
 }
 
 func TestMarkdown_AllToolsExistAndConformToVibePrinciples(t *testing.T) {
-	if len(allOdooTools) != 36 {
-		t.Fatalf("expected 36 tools, got %d", len(allOdooTools))
+	if len(allOdooTools) != 41 {
+		t.Fatalf("expected 41 tools, got %d", len(allOdooTools))
 	}
 
 	for _, name := range allOdooTools {

@@ -52,6 +52,13 @@ var toolOutputs = map[string]string{
 	"odoo_update_quotation":  "order_id, success",
 	"odoo_action_quotation":  "order_id, action, success",
 
+	// Projects & Tasks (5)
+	"odoo_list_projects": "projects, paging",
+	"odoo_get_project":   "project",
+	"odoo_list_tasks":    "tasks, paging",
+	"odoo_create_task":   "task_id, name, success",
+	"odoo_update_task":   "task_id, success",
+
 	// Generic & Discovery (2)
 	"odoo_execute_kw":      "result, model, method",
 	"odoo_describe_model":  "fields, model",
@@ -72,6 +79,8 @@ var paramRelated = map[string]relatedMeta{
 	"leave_id":      {tool: "odoo_list_leaves", field: "leaves[0].id"},
 	"contract_id":   {tool: "odoo_list_contracts", field: "contracts[0].id"},
 	"payslip_id":    {tool: "odoo_list_payslips", field: "payslips[0].id"},
+	"project_id":    {tool: "odoo_list_projects", field: "projects[0].id"},
+	"task_id":       {tool: "odoo_list_tasks", field: "tasks[0].id"},
 }
 
 func annotateRelated(props map[string]interface{}) {
@@ -132,6 +141,7 @@ func Register() ([]mcp.ToolDesc, map[string]mcp.ToolHandler) {
 	registerPayrollTools(add)
 	registerCRMTools(add)
 	registerSalesTools(add)
+	registerProjectTools(add)
 	registerGenericTools(add)
 
 	return descs, handlers
