@@ -32,6 +32,8 @@ func TestRegister(t *testing.T) {
 		"odoo_get_payslip",
 		"odoo_list_contracts",
 		"odoo_get_contract",
+		"odoo_create_contract",
+		"odoo_update_contract",
 		"odoo_search_partners",
 		"odoo_get_partner",
 		"odoo_create_partner",

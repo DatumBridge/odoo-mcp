@@ -14,8 +14,9 @@ var allOdooTools = []string{
 	"odoo_list_leaves", "odoo_get_leave", "odoo_create_leave_request",
 	"odoo_action_leave", "odoo_list_leave_types", "odoo_get_leave_balances",
 
-	// Payroll & Contracts (4)
+	// Payroll & Contracts (6)
 	"odoo_list_payslips", "odoo_get_payslip", "odoo_list_contracts", "odoo_get_contract",
+	"odoo_create_contract", "odoo_update_contract",
 
 	// CRM & Partners (10)
 	"odoo_search_partners", "odoo_get_partner", "odoo_create_partner",
@@ -33,8 +34,8 @@ var allOdooTools = []string{
 }
 
 func TestMarkdown_AllToolsExistAndConformToVibePrinciples(t *testing.T) {
-	if len(allOdooTools) != 34 {
-		t.Fatalf("expected 34 tools, got %d", len(allOdooTools))
+	if len(allOdooTools) != 36 {
+		t.Fatalf("expected 36 tools, got %d", len(allOdooTools))
 	}
 
 	for _, name := range allOdooTools {

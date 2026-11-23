@@ -23,11 +23,13 @@ var toolOutputs = map[string]string{
 	"odoo_list_leave_types":     "leave_types, total_count",
 	"odoo_get_leave_balances":   "allocations, total_count",
 
-	// Payroll & Contracts (4)
-	"odoo_list_payslips": "payslips, paging",
-	"odoo_get_payslip":   "payslip",
-	"odoo_list_contracts": "contracts, paging",
-	"odoo_get_contract":  "contract",
+	// Payroll & Contracts (6)
+	"odoo_list_payslips":   "payslips, paging",
+	"odoo_get_payslip":     "payslip",
+	"odoo_list_contracts":  "contracts, paging",
+	"odoo_get_contract":    "contract",
+	"odoo_create_contract": "contract_id, name, success",
+	"odoo_update_contract": "contract_id, success",
 
 	// CRM & Partners (10)
 	"odoo_search_partners": "partners, paging",

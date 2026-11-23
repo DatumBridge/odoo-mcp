@@ -124,6 +124,70 @@ func registerPayrollTools(add toolAdder) {
 		[]string{"contract_id"},
 		handleGetContract,
 	)
+
+	// 5. odoo_create_contract
+	add(
+		"odoo_create_contract",
+		"Create an employment salary contract for an employee in Odoo (hr.contract).",
+		baseProps(map[string]interface{}{
+			"name": map[string]interface{}{
+				"type":        "string",
+				"description": "Contract title or reference, e.g. 'Hợp đồng lao động - Nguyễn Văn A'.",
+			},
+			"employee_id": map[string]interface{}{
+				"type":        "integer",
+				"description": "Employee ID (hr.employee).",
+			},
+			"wage": map[string]interface{}{
+				"type":        "number",
+				"description": "Monthly base salary/wage amount.",
+			},
+			"date_start": map[string]interface{}{
+				"type":        "string",
+				"description": "Contract start date (YYYY-MM-DD).",
+			},
+			"date_end": map[string]interface{}{
+				"type":        "string",
+				"description": "Contract end date (YYYY-MM-DD, optional for indefinite term).",
+			},
+			"department_id": map[string]interface{}{
+				"type":        "integer",
+				"description": "Department ID (hr.department).",
+			},
+			"job_id": map[string]interface{}{
+				"type":        "integer",
+				"description": "Job position ID (hr.job).",
+			},
+			"state": map[string]interface{}{
+				"type":        "string",
+				"description": "Contract status: 'draft', 'open' (running), default 'open'.",
+			},
+			"extra_fields": map[string]interface{}{
+				"type":        "object",
+				"description": "Additional fields for hr.contract.",
+			},
+		}),
+		[]string{"name", "employee_id", "wage", "date_start"},
+		handleCreateContract,
+	)
+
+	// 6. odoo_update_contract
+	add(
+		"odoo_update_contract",
+		"Update terms or wage on an existing employee contract (hr.contract).",
+		baseProps(map[string]interface{}{
+			"contract_id": map[string]interface{}{
+				"type":        "integer",
+				"description": "Contract ID (hr.contract).",
+			},
+			"values": map[string]interface{}{
+				"type":        "object",
+				"description": "Key-value map of contract fields to update (e.g. wage, date_end, state).",
+			},
+		}),
+		[]string{"contract_id", "values"},
+		handleUpdateContract,
+	)
 }
 
 func handleListPayslips(args json.RawMessage) map[string]interface{} {
@@ -272,3 +336,90 @@ func handleGetContract(args json.RawMessage) map[string]interface{} {
 
 	return jsonResult(map[string]interface{}{"contract": records[0]})
 }
+
+func handleCreateContract(args json.RawMessage) map[string]interface{} {
+	client, m, err := clientFrom(args)
+	if err != nil {
+		return mcp.ToolResultError(err.Error())
+	}
+
+	name := strArg(m, "name")
+	empID := intArg(m, "employee_id", 0)
+	wage := floatArg(m, "wage", 0)
+	dateStart := strArg(m, "date_start")
+
+	if name == "" || empID <= 0 || wage <= 0 || dateStart == "" {
+		return mcp.ToolResultError("name, employee_id, wage, and date_start are required to create a contract")
+	}
+
+	vals := map[string]interface{}{
+		"name":        name,
+		"employee_id": empID,
+		"wage":        wage,
+		"date_start":  dateStart,
+	}
+	if dateEnd := strArg(m, "date_end"); dateEnd != "" {
+		vals["date_end"] = dateEnd
+	}
+	if deptID := intArg(m, "department_id", 0); deptID > 0 {
+		vals["department_id"] = deptID
+	}
+	if jobID := intArg(m, "job_id", 0); jobID > 0 {
+		vals["job_id"] = jobID
+	}
+	if state := strArg(m, "state"); state != "" {
+		vals["state"] = state
+	} else {
+		vals["state"] = "open"
+	}
+	if extra := mapArg(m, "extra_fields"); len(extra) > 0 {
+		for k, v := range extra {
+			vals[k] = v
+		}
+	}
+
+	c, cancel := ctx()
+	defer cancel()
+
+	newID, err := client.Create(c, "hr.contract", vals)
+	if err != nil {
+		return mcp.ToolResultError(err.Error())
+	}
+
+	return jsonResult(map[string]interface{}{
+		"contract_id": newID,
+		"name":        name,
+		"success":     true,
+	})
+}
+
+func handleUpdateContract(args json.RawMessage) map[string]interface{} {
+	client, m, err := clientFrom(args)
+	if err != nil {
+		return mcp.ToolResultError(err.Error())
+	}
+
+	contractID := intArg(m, "contract_id", 0)
+	if contractID <= 0 {
+		return mcp.ToolResultError("contract_id must be a positive integer")
+	}
+
+	values := mapArg(m, "values")
+	if len(values) == 0 {
+		return mcp.ToolResultError("values map cannot be empty")
+	}
+
+	c, cancel := ctx()
+	defer cancel()
+
+	ok, err := client.Write(c, "hr.contract", []int{contractID}, values)
+	if err != nil {
+		return mcp.ToolResultError(err.Error())
+	}
+
+	return jsonResult(map[string]interface{}{
+		"contract_id": contractID,
+		"success":     ok,
+	})
+}
+

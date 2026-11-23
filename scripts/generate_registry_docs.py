@@ -358,6 +358,43 @@ TOOLS = {
             "contract": {"date_start": "2025-01-01", "id": 8, "name": "Employment Contract", "state": "open", "wage": 30000000}
         }
     },
+    "odoo_create_contract": {
+        "summary": "Create an employment salary contract for an employee in Odoo (hr.contract).",
+        "next_tool": "Call `odoo_get_contract` with `contract_id` to inspect the created contract.",
+        "when": "The user wants to register a new labor contract or compensation terms for an employee.",
+        "params": [
+            ("name", "yes", "string", '"HDLD - Nguyen Van A"', "—", "Contract title or reference."),
+            ("employee_id", "yes", "integer", "1", "odoo_search_employees → employees[0].id", "Employee ID (hr.employee)."),
+            ("wage", "yes", "number", "25000000", "—", "Monthly base salary/wage amount."),
+            ("date_start", "yes", "string", '"2026-01-01"', "—", "Contract start date (YYYY-MM-DD)."),
+            ("date_end", "no", "string", '"2027-01-01"', "—", "Contract end date (YYYY-MM-DD)."),
+            ("department_id", "no", "integer", "2", "odoo_list_departments → departments[0].id", "Department ID."),
+            ("job_id", "no", "integer", "4", "—", "Job position ID."),
+            ("state", "no", "string", '"open"', "—", "Contract status: 'draft', 'open' (default 'open')."),
+        ],
+        "success": [
+            ("contract_id", "9", "Newly created contract ID."),
+            ("name", '"HDLD - Nguyen Van A"', "Contract title."),
+            ("success", "true", "True when contract creation succeeded."),
+        ],
+        "typical_in": {"date_start": "2026-01-01", "employee_id": 1, "name": "HDLD - Nguyen Van A", "wage": 25000000},
+        "typical_out": {"contract_id": 9, "name": "HDLD - Nguyen Van A", "success": True}
+    },
+    "odoo_update_contract": {
+        "summary": "Update terms, wage, or duration on an existing employee contract (hr.contract).",
+        "next_tool": "Call `odoo_get_contract` to inspect the updated contract.",
+        "when": "The user wants to update salary adjustments, contract renewals, or expiry dates.",
+        "params": [
+            ("contract_id", "yes", "integer", "9", "odoo_list_contracts → contracts[0].id", "Contract ID to update."),
+            ("values", "yes", "object", '{"wage": 28000000}', "—", "Key-value map of contract fields to update."),
+        ],
+        "success": [
+            ("contract_id", "9", "Updated contract ID."),
+            ("success", "true", "True when update succeeded."),
+        ],
+        "typical_in": {"contract_id": 9, "values": {"wage": 28000000}},
+        "typical_out": {"contract_id": 9, "success": True}
+    },
 
     # ==================== CRM TOOLS ====================
     "odoo_search_partners": {
