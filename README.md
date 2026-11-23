@@ -18,7 +18,7 @@ Supports comprehensive business domains in Odoo:
 - **Endpoints**:
   - `GET /health`: Health check
   - `POST /mcp`: MCP JSON-RPC protocol endpoint
-- **Port**: Default `8014` (configurable via `ODOO_MCP_PORT` or `PORT`)
+- **Port**: Default `8018` (configurable via `ODOO_MCP_PORT` or `PORT`)
 
 ## Run & Test
 
